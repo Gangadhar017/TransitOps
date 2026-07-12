@@ -3,7 +3,8 @@ const prisma = require('../lib/prisma');
 const { authorize } = require('../middleware/auth');
 const tripService = require('../services/trip.service');
 
-const CAN_MANAGE = ['DRIVER', 'FLEET_MANAGER'];
+// RBAC matrix: trip lifecycle (create/dispatch/complete/cancel) = Driver only
+const CAN_MANAGE = ['DRIVER'];
 
 // GET /api/trips?status=
 router.get('/', async (req, res, next) => {

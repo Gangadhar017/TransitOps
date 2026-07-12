@@ -3,7 +3,8 @@ const prisma = require('../lib/prisma');
 const { authorize } = require('../middleware/auth');
 const { ApiError } = require('../middleware/errorHandler');
 
-const CAN_WRITE = ['SAFETY_OFFICER', 'FLEET_MANAGER'];
+// RBAC matrix: Drivers CRUD = Safety Officer only (Fleet Manager is read-only)
+const CAN_WRITE = ['SAFETY_OFFICER'];
 
 function validateDriver(body) {
   const { name, licenseNo, licenseCategory, licenseExpiry, contact } = body;

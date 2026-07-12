@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import KpiCard from '../components/KpiCard';
@@ -10,14 +11,14 @@ const EXP_EMPTY = { vehicleId: '', category: 'TOLL', amount: '', note: '' };
 
 export default function Expenses() {
   const { user } = useAuth();
-  const canWrite = ['FINANCIAL_ANALYST', 'FLEET_MANAGER', 'DRIVER'].includes(user.role);
+  // RBAC matrix: Fuel Logs & Expenses CRUD = Financial Analyst only (FM & SO read-only, Driver no access)
+  const canWrite = user.role === 'FINANCIAL_ANALYST';
   const [tab, setTab] = useState('fuel');
   const [fuelLogs, setFuelLogs] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [vehicleFilter, setVehicleFilter] = useState('');
   const [form, setForm] = useState(null);
-  const [error, setError] = useState('');
 
   async function load() {
     const q = vehicleFilter ? `?vehicleId=${vehicleFilter}` : '';
@@ -27,7 +28,7 @@ export default function Expenses() {
       setExpenses(e);
       setVehicles(v);
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -41,14 +42,14 @@ export default function Expenses() {
 
   async function save(e) {
     e.preventDefault();
-    setError('');
     try {
       if (form.kind === 'fuel') await api.post('/fuel-logs', form);
       else await api.post('/expenses', form);
+      toast.success(form.kind === 'fuel' ? 'Fuel log recorded.' : 'Expense recorded.');
       setForm(null);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -75,8 +76,6 @@ export default function Expenses() {
           </div>
         )}
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
 
       <div className="kpi-grid">
         <KpiCard

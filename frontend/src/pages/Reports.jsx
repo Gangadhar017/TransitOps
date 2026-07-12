@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
 import KpiCard from '../components/KpiCard';
 import { LineChart, Donut, BarList } from '../components/charts';
@@ -9,7 +10,6 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export default function Reports() {
   const [report, setReport] = useState([]);
   const [trips, setTrips] = useState([]);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([api.get('/reports/vehicles'), api.get('/trips?status=COMPLETED')])
@@ -17,7 +17,7 @@ export default function Reports() {
         setReport(r);
         setTrips(t);
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => toast.error(err.message));
   }, []);
 
   async function downloadCsv() {
@@ -72,8 +72,6 @@ export default function Reports() {
           <IconDownload size={15} /> Export CSV
         </button>
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
 
       <div className="kpi-grid">
         <KpiCard

@@ -90,14 +90,16 @@ Every error returns `{ "error": "human-readable message" }` with a proper status
 
 | Module | Fleet Manager | Driver | Safety Officer | Financial Analyst |
 |---|---|---|---|---|
-| Vehicles | CRUD | read | read | read |
-| Drivers | CRUD | read | CRUD | read |
-| Trips | full | create/dispatch/complete/cancel | read | read |
-| Maintenance | open/close | read | read | read |
-| Fuel & Expenses | write | write (own trips) | read | write |
-| Reports/Dashboard | read | read | read | read |
+| Dashboard | Fleet KPIs | Trip KPIs | Compliance KPIs | Financial KPIs |
+| Vehicles | **CRUD** | read | read | read |
+| Drivers | read | read (+assign via trips) | **CRUD** | read |
+| Trips | read | **create · dispatch · complete · cancel** | read | read |
+| Maintenance | **CRUD** | read | read | read |
+| Fuel Logs | read | ✗ no access | read | **CRUD** |
+| Expenses | read | ✗ no access | read | **CRUD** |
+| Reports | operational | operational | compliance | financial |
 
-Reads are open to all authenticated users; writes are restricted by `authorize(...roles)` middleware.
+Enforced twice: `authorize(...roles)` middleware on the API (403 with a clear message), and the UI hides buttons/nav items the role can't use (Drivers never see the Expenses page). The dashboard reorders its KPI cards per role so each persona leads with their own lens.
 
 ## 6. KPI & Report Formulas
 

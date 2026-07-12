@@ -6,13 +6,14 @@ import {
   IconChart, IconBell, IconSearch, IconPlus, IconLogout, IconMoon, IconSun,
 } from './icons';
 
+// hideFor: RBAC matrix — Drivers have no access to Fuel Logs / Expenses
 const NAV = [
   { to: '/', label: 'Dashboard', icon: <IconGrid /> },
   { to: '/trips', label: 'Trips', icon: <IconRoute /> },
   { to: '/vehicles', label: 'Vehicles', icon: <IconTruck /> },
   { to: '/drivers', label: 'Drivers', icon: <IconUser /> },
   { to: '/maintenance', label: 'Maintenance', icon: <IconWrench /> },
-  { to: '/expenses', label: 'Expenses', icon: <IconWallet /> },
+  { to: '/expenses', label: 'Expenses', icon: <IconWallet />, hideFor: ['DRIVER'] },
   { to: '/reports', label: 'Reports', icon: <IconChart /> },
 ];
 
@@ -54,7 +55,7 @@ export default function Layout() {
         </button>
 
         <nav>
-          {NAV.map((item) => (
+          {NAV.filter((item) => !item.hideFor?.includes(user.role)).map((item) => (
             <NavLink key={item.to} to={item.to} end={item.to === '/'} className="nav-link">
               {item.icon} {item.label}
             </NavLink>

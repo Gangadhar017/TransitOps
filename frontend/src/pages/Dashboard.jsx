@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import KpiCard from '../components/KpiCard';
 import { IconRoute, IconUser, IconWrench, IconWallet, IconAlert, IconTruck, IconCalendar } from '../components/icons';
 
@@ -7,13 +9,13 @@ const fmtMoney = (n) => `₹${Math.round(n).toLocaleString()}`;
 const daysUntil = (d) => Math.ceil((new Date(d) - new Date()) / 86400000);
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [kpis, setKpis] = useState(null);
   const [trips, setTrips] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [openMaint, setOpenMaint] = useState([]);
   const [type, setType] = useState('');
   const [region, setRegion] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -31,10 +33,9 @@ export default function Dashboard() {
         setDrivers(d);
         setOpenMaint(m);
       })
-      .catch((err) => setError(err.message));
+      .catch((err) => toast.error(err.message));
   }, [type, region]);
 
-  if (error) return <div className="alert alert-error">{error}</div>;
   if (!kpis) return <p className="muted">Loading dashboard…</p>;
 
   // Revenue MTD from completed trips this month (real data)
@@ -90,27 +91,48 @@ export default function Dashboard() {
       </div>
 
       <div className="kpi-grid">
-        <KpiCard
-          icon={<IconRoute />} tone="blue" label="Active Trips" value={kpis.activeTrips}
-          trend={{ dir: 'up', text: `${kpis.pendingTrips} pending`, good: true }}
-          sub={`${kpis.pendingTrips} draft trip${kpis.pendingTrips === 1 ? '' : 's'} awaiting dispatch`}
-        />
-        <KpiCard
-          icon={<IconUser />} tone="green" label="Drivers On Duty"
-          value={<>{kpis.driversOnDuty}<small> / {kpis.totalDrivers}</small></>}
-          trend={{ dir: dutyPct >= 50 ? 'up' : 'down', text: `${dutyPct}% duty`, good: dutyPct >= 50 }}
-          sub="Available + currently on trip"
-        />
-        <KpiCard
-          icon={<IconWrench />} tone={kpis.inMaintenance > 0 ? 'red' : 'green'} label="Vehicles In Shop" value={kpis.inMaintenance}
-          trend={{ dir: kpis.inMaintenance > 0 ? 'up' : 'flat', text: `${openMaint.length} open job${openMaint.length === 1 ? '' : 's'}`, good: kpis.inMaintenance === 0 }}
-          sub={`${kpis.availableVehicles} vehicles ready for dispatch`}
-        />
-        <KpiCard
-          dark icon={<IconWallet />} tone="blue" label="Revenue MTD" value={fmtMoney(revenueMtd)}
-          trend={{ dir: 'up', text: `${kpis.fleetUtilization}% util`, good: true }}
-          sub={`Fleet utilization ${kpis.fleetUtilization}% of active fleet`}
-        />
+        {(() => {
+          // RBAC matrix: each role leads with its own KPI lens
+          // FM = fleet, DRIVER = trips, SO = compliance (drivers), FA = financial
+          const CARDS = {
+            trips: (
+              <KpiCard key="trips"
+                icon={<IconRoute />} tone="blue" label="Active Trips" value={kpis.activeTrips}
+                trend={{ dir: 'up', text: `${kpis.pendingTrips} pending`, good: true }}
+                sub={`${kpis.pendingTrips} draft trip${kpis.pendingTrips === 1 ? '' : 's'} awaiting dispatch`}
+              />
+            ),
+            drivers: (
+              <KpiCard key="drivers"
+                icon={<IconUser />} tone="green" label="Drivers On Duty"
+                value={<>{kpis.driversOnDuty}<small> / {kpis.totalDrivers}</small></>}
+                trend={{ dir: dutyPct >= 50 ? 'up' : 'down', text: `${dutyPct}% duty`, good: dutyPct >= 50 }}
+                sub="Available + currently on trip"
+              />
+            ),
+            shop: (
+              <KpiCard key="shop"
+                icon={<IconWrench />} tone={kpis.inMaintenance > 0 ? 'red' : 'green'} label="Vehicles In Shop" value={kpis.inMaintenance}
+                trend={{ dir: kpis.inMaintenance > 0 ? 'up' : 'flat', text: `${openMaint.length} open job${openMaint.length === 1 ? '' : 's'}`, good: kpis.inMaintenance === 0 }}
+                sub={`${kpis.availableVehicles} vehicles ready for dispatch`}
+              />
+            ),
+            revenue: (
+              <KpiCard key="revenue"
+                dark icon={<IconWallet />} tone="blue" label="Revenue MTD" value={fmtMoney(revenueMtd)}
+                trend={{ dir: 'up', text: `${kpis.fleetUtilization}% util`, good: true }}
+                sub={`Fleet utilization ${kpis.fleetUtilization}% of active fleet`}
+              />
+            ),
+          };
+          const ORDER = {
+            FLEET_MANAGER: ['shop', 'trips', 'drivers', 'revenue'],
+            DRIVER: ['trips', 'drivers', 'shop', 'revenue'],
+            SAFETY_OFFICER: ['drivers', 'trips', 'shop', 'revenue'],
+            FINANCIAL_ANALYST: ['revenue', 'trips', 'shop', 'drivers'],
+          };
+          return (ORDER[user.role] || ORDER.DRIVER).map((k) => CARDS[k]);
+        })()}
       </div>
 
       <div className="chart-grid">

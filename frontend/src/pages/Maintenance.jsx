@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import KpiCard from '../components/KpiCard';
@@ -15,14 +16,12 @@ export default function Maintenance() {
   const [vehicles, setVehicles] = useState([]);
   const [form, setForm] = useState(null);
   const [closing, setClosing] = useState(null);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
 
   async function load() {
     try {
       setLogs(await api.get('/maintenance'));
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -34,40 +33,37 @@ export default function Maintenance() {
   const pager = usePager(filtered, 8);
 
   async function openCreate() {
-    setError('');
     try {
       const all = await api.get('/vehicles');
       setVehicles(all.filter((v) => !['RETIRED', 'ON_TRIP', 'IN_SHOP'].includes(v.status)));
       setForm({ ...EMPTY });
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
   async function save(e) {
     e.preventDefault();
-    setError('');
     try {
       const log = await api.post('/maintenance', form);
       setForm(null);
-      setNotice(`Maintenance opened — ${log.vehicle.name} is now In Shop and hidden from dispatch.`);
+      toast.success(`Maintenance opened — ${log.vehicle.name} is now In Shop and hidden from dispatch.`);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message); // e.g. "vehicle is on a trip — complete or cancel the trip first"
     }
   }
 
   async function close(e) {
     e.preventDefault();
-    setError('');
     try {
       const cost = Number(new FormData(e.target).get('cost'));
       const log = await api.post(`/maintenance/${closing.id}/close`, { cost });
       setClosing(null);
-      setNotice(`Maintenance closed — ${log.vehicle.name} is Available again.`);
+      toast.success(`Maintenance closed — ${log.vehicle.name} is Available again.`);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -93,9 +89,6 @@ export default function Maintenance() {
           </button>
         )}
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
-      {notice && <div className="alert alert-success">{notice}</div>}
 
       <div className="kpi-grid">
         <KpiCard

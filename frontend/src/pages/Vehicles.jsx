@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import KpiCard from '../components/KpiCard';
@@ -14,7 +15,6 @@ export default function Vehicles() {
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [form, setForm] = useState(null);
-  const [error, setError] = useState('');
 
   async function load() {
     const params = new URLSearchParams();
@@ -23,7 +23,7 @@ export default function Vehicles() {
     try {
       setVehicles(await api.get(`/vehicles?${params}`));
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -35,24 +35,29 @@ export default function Vehicles() {
 
   async function save(e) {
     e.preventDefault();
-    setError('');
     try {
-      if (form.id) await api.put(`/vehicles/${form.id}`, form);
-      else await api.post('/vehicles', form);
+      if (form.id) {
+        await api.put(`/vehicles/${form.id}`, form);
+        toast.success(`Vehicle ${form.regNo} updated.`);
+      } else {
+        await api.post('/vehicles', form);
+        toast.success(`Vehicle ${form.regNo} registered.`);
+      }
       setForm(null);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message); // e.g. "A record with this reg_no already exists."
     }
   }
 
   async function remove(v) {
     if (!confirm(`Delete/retire ${v.name} (${v.regNo})?`)) return;
     try {
-      await api.del(`/vehicles/${v.id}`);
+      const res = await api.del(`/vehicles/${v.id}`);
+      toast.success(res.retired ? `${v.name} has trip history — marked as Retired.` : `${v.name} deleted.`);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -74,8 +79,6 @@ export default function Vehicles() {
           )}
         </div>
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
 
       <div className="kpi-grid">
         <KpiCard icon={<IconTruck />} tone="blue" label="Total Fleet" value={vehicles.length} />

@@ -3,10 +3,12 @@ const prisma = require('../lib/prisma');
 const { authorize } = require('../middleware/auth');
 const { ApiError } = require('../middleware/errorHandler');
 
-const CAN_WRITE = ['FINANCIAL_ANALYST', 'FLEET_MANAGER', 'DRIVER'];
+// RBAC matrix: Fuel Logs — CRUD = Financial Analyst; Read = FM & Safety Officer; Driver has no access
+const CAN_WRITE = ['FINANCIAL_ANALYST'];
+const CAN_READ = ['FINANCIAL_ANALYST', 'FLEET_MANAGER', 'SAFETY_OFFICER'];
 
 // GET /api/fuel-logs?vehicleId=
-router.get('/', async (req, res, next) => {
+router.get('/', authorize(...CAN_READ), async (req, res, next) => {
   try {
     const where = req.query.vehicleId ? { vehicleId: Number(req.query.vehicleId) } : {};
     const logs = await prisma.fuelLog.findMany({

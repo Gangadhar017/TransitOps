@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import KpiCard from '../components/KpiCard';
@@ -9,22 +10,21 @@ const EMPTY = { source: '', destination: '', vehicleId: '', driverId: '', cargoW
 
 export default function Trips() {
   const { user } = useAuth();
-  const canManage = ['DRIVER', 'FLEET_MANAGER'].includes(user.role);
+  // RBAC matrix: trip lifecycle = Driver only (everyone else read-only)
+  const canManage = user.role === 'DRIVER';
   const [trips, setTrips] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [form, setForm] = useState(null);
   const [completing, setCompleting] = useState(null);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
 
   async function load() {
     const params = statusFilter ? `?status=${statusFilter}` : '';
     try {
       setTrips(await api.get(`/trips${params}`));
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -35,33 +35,29 @@ export default function Trips() {
   const pager = usePager(trips, 8);
 
   async function openCreate() {
-    setError('');
     try {
       const [v, d] = await Promise.all([api.get('/vehicles?available=true'), api.get('/drivers?assignable=true')]);
       setVehicles(v);
       setDrivers(d);
       setForm({ ...EMPTY });
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
   async function createTrip(e) {
     e.preventDefault();
-    setError('');
     try {
       await api.post('/trips', form);
       setForm(null);
-      setNotice('Trip created as Draft. Dispatch it when ready.');
+      toast.success('Trip created as Draft. Dispatch it when ready.');
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message); // e.g. "Cargo 550 kg exceeds Van-05's capacity of 500 kg"
     }
   }
 
   async function act(trip, action, body = {}) {
-    setError('');
-    setNotice('');
     try {
       await api.post(`/trips/${trip.id}/${action}`, body);
       const messages = {
@@ -69,11 +65,11 @@ export default function Trips() {
         complete: `Trip #${trip.id} completed — vehicle and driver are Available again.`,
         cancel: `Trip #${trip.id} cancelled${trip.status === 'DISPATCHED' ? ' — vehicle and driver restored to Available.' : '.'}`,
       };
-      setNotice(messages[action]);
+      toast.success(messages[action]);
       setCompleting(null);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message); // e.g. "Ravi Expired's license expired on 2026-06-12"
     }
   }
 
@@ -105,9 +101,6 @@ export default function Trips() {
           </button>
         )}
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
-      {notice && <div className="alert alert-success">{notice}</div>}
 
       <div className="kpi-grid">
         <KpiCard icon={<IconRoute />} tone="blue" label="On Route" value={count('DISPATCHED')} sub="Currently dispatched" />

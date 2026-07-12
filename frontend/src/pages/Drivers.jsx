@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import KpiCard from '../components/KpiCard';
@@ -13,12 +14,12 @@ const initials = (name) => name.split(' ').map((w) => w[0]).slice(0, 2).join('')
 
 export default function Drivers() {
   const { user } = useAuth();
-  const canWrite = ['SAFETY_OFFICER', 'FLEET_MANAGER'].includes(user.role);
+  // RBAC matrix: Drivers CRUD = Safety Officer only
+  const canWrite = user.role === 'SAFETY_OFFICER';
   const [drivers, setDrivers] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [form, setForm] = useState(null);
-  const [error, setError] = useState('');
 
   async function load() {
     const params = new URLSearchParams();
@@ -27,7 +28,7 @@ export default function Drivers() {
     try {
       setDrivers(await api.get(`/drivers?${params}`));
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -39,14 +40,18 @@ export default function Drivers() {
 
   async function save(e) {
     e.preventDefault();
-    setError('');
     try {
-      if (form.id) await api.put(`/drivers/${form.id}`, form);
-      else await api.post('/drivers', form);
+      if (form.id) {
+        await api.put(`/drivers/${form.id}`, form);
+        toast.success(`Driver ${form.name} updated.`);
+      } else {
+        await api.post('/drivers', form);
+        toast.success(`Driver ${form.name} registered.`);
+      }
       setForm(null);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message);
     }
   }
 
@@ -54,9 +59,10 @@ export default function Drivers() {
     if (!confirm(`Delete driver ${d.name}?`)) return;
     try {
       await api.del(`/drivers/${d.id}`);
+      toast.success(`Driver ${d.name} deleted.`);
       load();
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message); // e.g. "Driver has trip history — suspend instead"
     }
   }
 
@@ -77,8 +83,6 @@ export default function Drivers() {
           </button>
         )}
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
 
       <div className="kpi-grid">
         <KpiCard icon={<IconUser />} tone="blue" label="Total Drivers" value={drivers.length} />
