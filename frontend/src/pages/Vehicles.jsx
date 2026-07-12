@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import KpiCard from '../components/KpiCard';
+import { usePager, Pager } from '../components/Pagination';
+import { IconTruck, IconRoute, IconWrench, IconMoon, IconPlus, IconSearch } from '../components/icons';
 
-// Full CRUD page — use this as the PATTERN for Drivers / Maintenance / Expenses pages.
 const EMPTY = { regNo: '', name: '', type: 'Van', maxLoadKg: '', odometerKm: '', acquisitionCost: '', region: 'West' };
 
 export default function Vehicles() {
@@ -11,7 +13,7 @@ export default function Vehicles() {
   const [vehicles, setVehicles] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [form, setForm] = useState(null); // null = closed, {} = create, {id} = edit
+  const [form, setForm] = useState(null);
   const [error, setError] = useState('');
 
   async function load() {
@@ -29,6 +31,8 @@ export default function Vehicles() {
     load();
   }, [statusFilter, search]);
 
+  const pager = usePager(vehicles, 8);
+
   async function save(e) {
     e.preventDefault();
     setError('');
@@ -38,7 +42,7 @@ export default function Vehicles() {
       setForm(null);
       load();
     } catch (err) {
-      setError(err.message); // e.g. "A record with this reg_no already exists."
+      setError(err.message);
     }
   }
 
@@ -53,23 +57,19 @@ export default function Vehicles() {
   }
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+  const count = (s) => vehicles.filter((v) => v.status === s).length;
 
   return (
     <div>
       <div className="page-head">
-        <h1>Vehicle Registry</h1>
+        <div>
+          <h1>Vehicle Management</h1>
+          <p className="page-sub">Monitor, track, and manage your active fleet resources.</p>
+        </div>
         <div className="filters">
-          <input placeholder="Search name / reg no…" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="">All statuses</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="ON_TRIP">On Trip</option>
-            <option value="IN_SHOP">In Shop</option>
-            <option value="RETIRED">Retired</option>
-          </select>
           {canWrite && (
-            <button className="btn btn-primary" onClick={() => setForm({ ...EMPTY })}>
-              + Add Vehicle
+            <button className="btn btn-dark" onClick={() => setForm({ ...EMPTY })}>
+              <IconPlus size={15} /> Add New Vehicle
             </button>
           )}
         </div>
@@ -77,51 +77,71 @@ export default function Vehicles() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Reg No</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Max Load (kg)</th>
-            <th>Odometer (km)</th>
-            <th>Region</th>
-            <th>Status</th>
-            {canWrite && <th></th>}
-          </tr>
-        </thead>
-        <tbody>
-          {vehicles.map((v) => (
-            <tr key={v.id}>
-              <td className="mono">{v.regNo}</td>
-              <td>{v.name}</td>
-              <td>{v.type}</td>
-              <td>{Number(v.maxLoadKg).toLocaleString()}</td>
-              <td>{Number(v.odometerKm).toLocaleString()}</td>
-              <td>{v.region || '—'}</td>
-              <td>
-                <span className={`badge badge-${v.status.toLowerCase()}`}>{v.status.replaceAll('_', ' ')}</span>
-              </td>
-              {canWrite && (
-                <td className="row-actions">
-                  <button className="btn btn-ghost" onClick={() => setForm({ ...v })}>Edit</button>
-                  <button className="btn btn-ghost danger" onClick={() => remove(v)}>Delete</button>
-                </td>
+      <div className="kpi-grid">
+        <KpiCard icon={<IconTruck />} tone="blue" label="Total Fleet" value={vehicles.length} />
+        <KpiCard icon={<IconRoute />} tone="green" label="Active Units (On Trip)" value={count('ON_TRIP')} />
+        <KpiCard icon={<IconWrench />} tone="red" label="Units in Maintenance" value={count('IN_SHOP')} />
+        <KpiCard icon={<IconMoon />} tone="amber" label="Idle Units (Available)" value={count('AVAILABLE')} />
+      </div>
+
+      <div className="panel">
+        <div className="panel-head">
+          <h2>Vehicle Roster</h2>
+          <div className="filters">
+            <div className="topbar-search" style={{ maxWidth: 240 }}>
+              <IconSearch size={15} />
+              <input placeholder="Search roster…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="">All statuses</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="ON_TRIP">On Trip</option>
+              <option value="IN_SHOP">In Shop</option>
+              <option value="RETIRED">Retired</option>
+            </select>
+          </div>
+        </div>
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Reg No</th><th>Model / Make</th><th>Type</th><th>Max Load (kg)</th>
+                <th>Odometer (km)</th><th>Region</th><th>Current Status</th>
+                {canWrite && <th>Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {pager.slice.map((v) => (
+                <tr key={v.id}>
+                  <td className="mono">{v.regNo}</td>
+                  <td><strong>{v.name}</strong></td>
+                  <td>{v.type}</td>
+                  <td>{Number(v.maxLoadKg).toLocaleString()}</td>
+                  <td className="mono">{Number(v.odometerKm).toLocaleString()}</td>
+                  <td>{v.region || '—'}</td>
+                  <td><span className={`badge badge-${v.status.toLowerCase()}`}>{v.status.replaceAll('_', ' ')}</span></td>
+                  {canWrite && (
+                    <td className="row-actions">
+                      <button className="btn btn-ghost btn-sm" onClick={() => setForm({ ...v })}>Edit</button>
+                      <button className="btn btn-ghost btn-sm danger" onClick={() => remove(v)}>Delete</button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {vehicles.length === 0 && (
+                <tr><td colSpan="8" className="muted center">No vehicles match the current filters.</td></tr>
               )}
-            </tr>
-          ))}
-          {vehicles.length === 0 && (
-            <tr>
-              <td colSpan="8" className="muted center">No vehicles match the current filters.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            </tbody>
+          </table>
+        </div>
+        <Pager pager={pager} />
+      </div>
 
       {form && (
         <div className="modal-backdrop" onClick={() => setForm(null)}>
           <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
             <h2>{form.id ? 'Edit Vehicle' : 'Register Vehicle'}</h2>
+            <p className="muted small">Registration numbers are unique — duplicates are rejected by the database.</p>
             <div className="form-grid">
               <label>Registration No<input value={form.regNo} onChange={set('regNo')} placeholder="GJ01AB1234" required /></label>
               <label>Name / Model<input value={form.name} onChange={set('name')} placeholder="Van-05" required /></label>
@@ -150,7 +170,7 @@ export default function Vehicles() {
             </div>
             <div className="modal-actions">
               <button type="button" className="btn btn-ghost" onClick={() => setForm(null)}>Cancel</button>
-              <button className="btn btn-primary">{form.id ? 'Save changes' : 'Register'}</button>
+              <button className="btn btn-dark">{form.id ? 'Save Changes' : 'Register Vehicle'}</button>
             </div>
           </form>
         </div>

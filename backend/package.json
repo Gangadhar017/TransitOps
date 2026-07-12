@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "db:migrate": "prisma migrate dev --name init",
     "db:seed": "node prisma/seed.js",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test:e2e": "node tests/e2e.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

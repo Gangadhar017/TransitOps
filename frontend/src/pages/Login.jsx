@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { IconTruck } from '../components/icons';
 
 export default function Login() {
   const { login } = useAuth();
@@ -29,10 +30,14 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        <div className="brand brand-lg">
-          Transit<span>Ops</span>
+        <div className="login-brand">
+          <div className="brand-ico"><IconTruck size={22} /></div>
+          <div>
+            <div className="brand-name">TransitOps</div>
+            <div className="brand-tag">Fleet Operations</div>
+          </div>
         </div>
-        <p className="muted">Smart Transport Operations Platform</p>
+        <p className="muted">Sign in to your operations command center.</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
@@ -44,8 +49,8 @@ export default function Login() {
           Password
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
         </label>
-        <button className="btn btn-primary" disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign in'}
+        <button className="btn btn-blue" disabled={loading} style={{ justifyContent: 'center' }}>
+          {loading ? 'Signing in…' : 'Sign In'}
         </button>
 
         <p className="muted small">
