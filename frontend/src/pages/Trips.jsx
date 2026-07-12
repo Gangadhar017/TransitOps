@@ -10,8 +10,8 @@ const EMPTY = { source: '', destination: '', vehicleId: '', driverId: '', cargoW
 
 export default function Trips() {
   const { user } = useAuth();
-  // RBAC matrix: trip lifecycle = Driver only (everyone else read-only)
-  const canManage = user.role === 'DRIVER';
+  // RBAC: Driver owns the trip lifecycle; Fleet Manager has full access
+  const canManage = ['DRIVER', 'FLEET_MANAGER'].includes(user.role);
   const [trips, setTrips] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [vehicles, setVehicles] = useState([]);

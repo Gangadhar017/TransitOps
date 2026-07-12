@@ -23,6 +23,12 @@ let r = await req('POST', '/auth/login', { email: 'manager@transitops.com', pass
 check('Wrong password rejected (401)', r.status === 401);
 r = await req('POST', '/auth/login', { email: 'not-an-email', password: 'x' });
 check('Invalid email format rejected (400)', r.status === 400, r.data.error);
+r = await req('POST', '/auth/register', { name: 'X', email: 'bad-email', password: 'Password@123', role: 'DRIVER' });
+check('Signup: invalid email rejected (400)', r.status === 400, r.data.error);
+r = await req('POST', '/auth/register', { name: 'X', email: 'x@y.com', password: 'short', role: 'DRIVER' });
+check('Signup: short password rejected (400)', r.status === 400, r.data.error);
+r = await req('POST', '/auth/register', { name: 'X', email: 'manager@transitops.com', password: 'Password@123', role: 'DRIVER' });
+check('Signup: duplicate email rejected (409)', r.status === 409, r.data.error);
 r = await login('manager@transitops.com');
 check('Manager login works', r.status === 200 && !!r.data.token);
 
@@ -40,12 +46,14 @@ r = await req('POST', '/vehicles', { regNo: 'GJ01AB1234', name: 'Dup', type: 'Va
 check('Duplicate reg no rejected (409)', r.status === 409, r.data.error);
 
 // ---------- 4. RBAC matrix enforcement ----------
-r = await req('POST', '/trips', { source: 'A', destination: 'B', vehicleId: van.id, driverId: alex.id, cargoWeightKg: 10, plannedDistanceKm: 10 });
-check('RBAC: Fleet Manager blocked from creating trips (403)', r.status === 403, r.data.error);
-r = await req('POST', '/drivers', { name: 'X', licenseNo: 'DL-X-1', licenseCategory: 'LMV', licenseExpiry: '2030-01-01', contact: '9999999999' });
-check('RBAC: Fleet Manager blocked from creating drivers (403)', r.status === 403, r.data.error);
-r = await req('POST', '/fuel-logs', { vehicleId: van.id, liters: 1, cost: 1 });
-check('RBAC: Fleet Manager blocked from writing fuel logs (403)', r.status === 403, r.data.error);
+// Fleet Manager has FULL access — a 400 validation error (not 403) proves the
+// role gate passes, without inserting junk data.
+r = await req('POST', '/trips', { source: 'A', destination: 'B', vehicleId: van.id, driverId: alex.id, cargoWeightKg: 0, plannedDistanceKm: 10 });
+check('RBAC: Fleet Manager CAN manage trips (400 validation, not 403)', r.status === 400, r.data.error);
+r = await req('POST', '/drivers', { name: 'X', licenseNo: 'DL-X-1', licenseCategory: 'LMV', licenseExpiry: '2030-01-01', contact: 'bad' });
+check('RBAC: Fleet Manager CAN manage drivers (400 validation, not 403)', r.status === 400, r.data.error);
+r = await req('POST', '/fuel-logs', { vehicleId: van.id, liters: 0, cost: 1 });
+check('RBAC: Fleet Manager CAN write fuel logs (400 validation, not 403)', r.status === 400, r.data.error);
 r = await req('GET', '/fuel-logs');
 check('RBAC: Fleet Manager CAN read fuel logs', r.status === 200);
 

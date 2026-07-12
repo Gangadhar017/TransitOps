@@ -11,8 +11,8 @@ const EXP_EMPTY = { vehicleId: '', category: 'TOLL', amount: '', note: '' };
 
 export default function Expenses() {
   const { user } = useAuth();
-  // RBAC matrix: Fuel Logs & Expenses CRUD = Financial Analyst only (FM & SO read-only, Driver no access)
-  const canWrite = user.role === 'FINANCIAL_ANALYST';
+  // RBAC: Financial Analyst owns fuel & expenses; Fleet Manager has full access (Driver: no access)
+  const canWrite = ['FINANCIAL_ANALYST', 'FLEET_MANAGER'].includes(user.role);
   const [tab, setTab] = useState('fuel');
   const [fuelLogs, setFuelLogs] = useState([]);
   const [expenses, setExpenses] = useState([]);

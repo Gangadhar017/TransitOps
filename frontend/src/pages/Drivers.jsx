@@ -14,8 +14,8 @@ const initials = (name) => name.split(' ').map((w) => w[0]).slice(0, 2).join('')
 
 export default function Drivers() {
   const { user } = useAuth();
-  // RBAC matrix: Drivers CRUD = Safety Officer only
-  const canWrite = user.role === 'SAFETY_OFFICER';
+  // RBAC: Safety Officer manages drivers; Fleet Manager has full access
+  const canWrite = ['SAFETY_OFFICER', 'FLEET_MANAGER'].includes(user.role);
   const [drivers, setDrivers] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');

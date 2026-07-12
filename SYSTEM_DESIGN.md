@@ -92,12 +92,14 @@ Every error returns `{ "error": "human-readable message" }` with a proper status
 |---|---|---|---|---|
 | Dashboard | Fleet KPIs | Trip KPIs | Compliance KPIs | Financial KPIs |
 | Vehicles | **CRUD** | read | read | read |
-| Drivers | read | read (+assign via trips) | **CRUD** | read |
-| Trips | read | **create · dispatch · complete · cancel** | read | read |
+| Drivers | **CRUD** (full access) | read (+assign via trips) | **CRUD** | read |
+| Trips | **full access** | **create · dispatch · complete · cancel** | read | read |
 | Maintenance | **CRUD** | read | read | read |
-| Fuel Logs | read | ✗ no access | read | **CRUD** |
-| Expenses | read | ✗ no access | read | **CRUD** |
+| Fuel Logs | **CRUD** (full access) | ✗ no access | read | **CRUD** |
+| Expenses | **CRUD** (full access) | ✗ no access | read | **CRUD** |
 | Reports | operational | operational | compliance | financial |
+
+The Fleet Manager is the admin persona with full access to every module; each specialist role owns its domain (Driver → trips, Safety Officer → drivers, Financial Analyst → costs) and Drivers are fully locked out of financial data.
 
 Enforced twice: `authorize(...roles)` middleware on the API (403 with a clear message), and the UI hides buttons/nav items the role can't use (Drivers never see the Expenses page). The dashboard reorders its KPI cards per role so each persona leads with their own lens.
 

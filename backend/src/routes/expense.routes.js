@@ -3,8 +3,8 @@ const prisma = require('../lib/prisma');
 const { authorize } = require('../middleware/auth');
 const { ApiError } = require('../middleware/errorHandler');
 
-// RBAC matrix: Expenses — CRUD = Financial Analyst; Read = FM & Safety Officer; Driver has no access
-const CAN_WRITE = ['FINANCIAL_ANALYST'];
+// RBAC: Financial Analyst owns expenses; Fleet Manager has full access; Driver has no access
+const CAN_WRITE = ['FINANCIAL_ANALYST', 'FLEET_MANAGER'];
 const CAN_READ = ['FINANCIAL_ANALYST', 'FLEET_MANAGER', 'SAFETY_OFFICER'];
 const CATEGORIES = ['TOLL', 'PARKING', 'FINE', 'MISC'];
 
