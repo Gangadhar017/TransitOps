@@ -1,15 +1,17 @@
 {
   "name": "transitops-backend",
   "version": "1.0.0",
-  "description": "TransitOps REST API - Express + Prisma + PostgreSQL",
+  "description": "TransitOps REST API: Express, Prisma and PostgreSQL",
   "main": "src/server.js",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "db:migrate": "prisma migrate dev --name init",
+    "test": "node tests/run.js",
+    "test:e2e": "node tests/e2e.mjs",
+    "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js",
-    "db:studio": "prisma studio",
-    "test:e2e": "node tests/e2e.mjs"
+    "db:studio": "prisma studio"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -19,11 +21,15 @@
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "embedded-postgres": "17.12.0-beta.19",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
     "prisma": "^6.19.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
