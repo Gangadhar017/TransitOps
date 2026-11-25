@@ -119,7 +119,7 @@ export default function Expenses() {
                       <div className="cell-avatar">
                         <div className="mini-avatar"><IconTruck size={15} /></div>
                         <div>
-                          <strong>{f.vehicle.regNo}</strong>
+                          <span className="plate">{f.vehicle.regNo}</span>
                           <div className="muted small">{f.vehicle.name}</div>
                         </div>
                       </div>
@@ -147,7 +147,7 @@ export default function Expenses() {
                       <div className="cell-avatar">
                         <div className="mini-avatar"><IconTruck size={15} /></div>
                         <div>
-                          <strong>{x.vehicle.regNo}</strong>
+                          <span className="plate">{x.vehicle.regNo}</span>
                           <div className="muted small">{x.vehicle.name}</div>
                         </div>
                       </div>

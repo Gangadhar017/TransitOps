@@ -136,7 +136,7 @@ export default function Trips() {
                   <td><strong>{t.source}</strong> → <strong>{t.destination}</strong></td>
                   <td>
                     <strong>{t.vehicle.name}</strong>
-                    <div className="muted small mono">{t.vehicle.regNo}</div>
+                    <div style={{ marginTop: 4 }}><span className="plate">{t.vehicle.regNo}</span></div>
                   </td>
                   <td>{t.driver.name}</td>
                   <td>{Number(t.cargoWeightKg).toLocaleString()}</td>

@@ -21,8 +21,8 @@ export function LineChart({ data, height = 240, prefix = '₹' }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="svg-chart" role="img">
       <defs>
         <linearGradient id="lc-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.02" />
+          <stop offset="0%" stopColor="var(--chart)" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="var(--chart)" stopOpacity="0.02" />
         </linearGradient>
       </defs>
       {ticks.map((t) => (
@@ -32,10 +32,10 @@ export function LineChart({ data, height = 240, prefix = '₹' }) {
         </g>
       ))}
       <path d={area} fill="url(#lc-fill)" />
-      <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d={path} fill="none" stroke="var(--chart)" strokeWidth="2.5" strokeLinejoin="round" />
       {pts.map(([px, py], i) => (
         <g key={i}>
-          <circle cx={px} cy={py} r="4.5" fill="var(--surface)" stroke="var(--accent)" strokeWidth="2.5" />
+          <circle cx={px} cy={py} r="4.5" fill="var(--surface)" stroke="var(--chart)" strokeWidth="2.5" />
           <text x={px} y={H - 10} textAnchor="middle" className="axis-text">{data[i].label}</text>
         </g>
       ))}

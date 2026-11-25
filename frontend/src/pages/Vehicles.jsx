@@ -124,7 +124,7 @@ export default function Vehicles() {
             <tbody>
               {pager.slice.map((v) => (
                 <tr key={v.id}>
-                  <td className="mono">{v.regNo}</td>
+                  <td><span className="plate">{v.regNo}</span></td>
                   <td><strong>{v.name}</strong></td>
                   <td>{v.type}</td>
                   <td>{Number(v.maxLoadKg).toLocaleString()}</td>

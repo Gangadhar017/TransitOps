@@ -125,7 +125,7 @@ export default function Maintenance() {
                     <div className="cell-avatar">
                       <div className="mini-avatar"><IconTruck size={15} /></div>
                       <div>
-                        <strong>{m.vehicle.regNo}</strong>
+                        <span className="plate">{m.vehicle.regNo}</span>
                         <div className="muted small">{m.vehicle.name}</div>
                       </div>
                     </div>

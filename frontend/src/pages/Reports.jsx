@@ -54,9 +54,9 @@ export default function Reports() {
   });
 
   const donutData = [
-    { label: 'Fuel', value: totFuelCost, color: '#2563eb' },
-    { label: 'Maintenance', value: totMaint, color: '#f59e0b' },
-    { label: 'Tolls & Other', value: totOther, color: '#10b981' },
+    { label: 'Fuel', value: totFuelCost, color: 'var(--chart-fuel)' },
+    { label: 'Maintenance', value: totMaint, color: 'var(--chart-maintenance)' },
+    { label: 'Tolls & Other', value: totOther, color: 'var(--chart-other)' },
   ];
   const totalCost = totFuelCost + totMaint + totOther;
   const fmtCr = (n) => (n >= 10000000 ? `₹${(n / 10000000).toFixed(1)} Cr` : n >= 100000 ? `₹${(n / 100000).toFixed(1)} L` : `₹${Math.round(n).toLocaleString()}`);
@@ -153,7 +153,7 @@ export default function Reports() {
                 <tr key={r.vehicleId}>
                   <td>
                     <strong>{r.name}</strong>
-                    <div className="muted small mono">{r.regNo}</div>
+                    <div style={{ marginTop: 4 }}><span className="plate">{r.regNo}</span></div>
                   </td>
                   <td>{r.completedTrips}</td>
                   <td className="mono">{r.distanceKm.toLocaleString()}</td>

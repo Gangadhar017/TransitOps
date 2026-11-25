@@ -200,7 +200,7 @@ export default function Dashboard() {
                     <div className="cell-avatar">
                       <div className="mini-avatar"><IconTruck size={15} /></div>
                       <div>
-                        <strong>{t.vehicle.regNo}</strong>
+                        <span className="plate">{t.vehicle.regNo}</span>
                         <div className="muted small">{t.driver.name}</div>
                       </div>
                     </div>
