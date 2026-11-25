@@ -1,151 +1,125 @@
 <div align="center">
-  <h1>🚚 TransitOps</h1>
-  <p><strong>Smart Transport Operations Platform</strong></p>
+  <h1>TransitOps</h1>
+  <p><strong>A fleet operations platform that refuses bad dispatches.</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-    <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-    <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
-    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-    <img src="https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white" alt="Prisma" />
+    <a href="https://github.com/Gangadhar017/TransitOps/actions/workflows/ci.yml"><img src="https://github.com/Gangadhar017/TransitOps/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+    <img src="https://img.shields.io/badge/end--to--end_tests-37_of_37-17803d" alt="37 of 37 end-to-end tests" />
+    <img src="https://img.shields.io/badge/React-18-20232A?logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white" alt="Express" />
+    <img src="https://img.shields.io/badge/PostgreSQL-17-316192?logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white" alt="Prisma" />
   </p>
-  <p>
-    <img src="https://img.shields.io/badge/E2E_Tests-37%2F37_passing-16a34a?style=for-the-badge" alt="Tests" />
-    <img src="https://img.shields.io/badge/Deployed-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Render" />
-  </p>
-  <h3>
-    🌐 <a href="https://transitops-1xru.onrender.com">Live Demo → transitops-1xru.onrender.com</a>
-  </h3>
-  <p><em>Login: <code>manager@transitops.com</code> / <code>Password@123</code> &nbsp;·&nbsp; free-tier instance — first load after idle takes ~50 s</em></p>
+  <h3><a href="https://transitops-1xru.onrender.com">Live demo: transitops-1xru.onrender.com</a></h3>
+  <p><em>Pick a role on the sign-in page; no password needed. Free hosting: the first load after an idle spell takes about a minute.</em></p>
 </div>
 
----
-
-**TransitOps** is a comprehensive, full-stack fleet management solution built for the Odoo Hackathon. It is designed to handle complex transportation workflows, including dispatching, vehicle maintenance tracking, driver management, and financial analytics.
-
-By utilizing strict database constraints and atomic state machine transitions, TransitOps ensures high data integrity and a seamless operational experience.
-
-## ✨ Key Features
-
-- **Strict State Machine Architecture**: Complex workflows (like vehicle dispatches and maintenance) are handled atomically inside database transactions. A vehicle cannot be dispatched if it is currently `IN_SHOP` or already `ON_TRIP` — both statuses flip together, or neither does.
-- **Role-Based Access Control (RBAC)**: Distinct personas (`FLEET_MANAGER`, `DRIVER`, `SAFETY_OFFICER`, `FINANCIAL_ANALYST`) enforced twice — `authorize()` middleware on the API and role-aware UI. Users only see and interact with data relevant to their role.
-- **Graceful Error Handling**: Validation rules (overweight cargo, expired licenses, duplicate registration numbers, double-assignment) return clear, human-readable toast notifications.
-- **Live KPI Dashboard**: Instant visibility into Fleet Utilization, Active Trips, Drivers On Duty, and Revenue — with KPI ordering tailored to the active user's role, plus a live notification center for expiring licenses and open maintenance jobs.
-- **Analytics & Reports**: Fuel efficiency, operational cost, and Vehicle ROI per vehicle — visualized with **hand-written SVG charts (zero chart libraries)** and exportable as **CSV**.
-- **Full Auth Flow**: Sign-up with role selection, stateless JWT sessions, bcrypt-hashed passwords.
-- **Polished UX**: Dark mode, global search, sortable & paginated tables, fully responsive down to mobile.
+![TransitOps dashboard](docs/screenshots/dashboard.webp)
 
 ---
 
-## 🛠 Tech Stack
+**TransitOps** handles dispatch, maintenance, drivers and costs for a transport fleet. It was built for the Odoo Hackathon.
 
-- **Frontend**: React (Vite) with a modern, responsive UI — no UI kit, no chart library, every component hand-built.
-- **Backend**: Node.js & Express.js REST API.
-- **Database**: PostgreSQL with Prisma ORM for type-safe queries and robust schema migrations. Money and weights stored as `DECIMAL`, statuses as native enums, uniqueness as database constraints.
-- **Authentication**: Stateless JWT authentication with Bcrypt password hashing.
-- **Deployment**: Single-service deploy on Render (Express serves the built React app) + managed PostgreSQL, defined in [`render.yaml`](./render.yaml).
+Its point is that the rules are enforced where they cannot be skipped: inside the database transaction. A vehicle in the workshop, a driver with an expired licence, cargo over capacity, a truck that is already on the road: each of these is refused, with a message that says why.
 
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js v18+
-- PostgreSQL 14+ (local database)
-
-### 1. Database Setup
-Create a new PostgreSQL database named `transitops`.
-
-```powershell
-psql -U postgres -c "CREATE DATABASE transitops;"
-```
-
-### 2. Backend Initialization
-
-```bash
-cd backend
-# Duplicate the environment template
-copy .env.example .env
-# Important: Edit .env and put your real postgres password in DATABASE_URL
-
-# Install dependencies and setup the database
-npm install
-npx prisma migrate dev --name init   # Applies schema
-npm run db:seed                      # Seeds demo data
-npm run dev                          # Starts API on http://localhost:5000
-```
-
-### 3. Frontend Initialization (in a new terminal)
-
-```bash
-cd frontend
-npm install
-npm run dev                          # Starts UI on http://localhost:5173
-```
-
-### 4. Run the Test Suite (backend must be running)
-
-```bash
-cd backend
-npm run test:e2e                     # 37 automated checks: every business rule,
-                                     # every validation, every RBAC permission
-```
-
----
-
-## 🔐 Demo Credentials
-
-Use the following credentials to explore the platform across different roles — locally or on the [live demo](https://transitops-1xru.onrender.com). The password for all accounts is: `Password@123`
-
-| Role | Email | Domain Access |
+| Sign in | Trips | Reports |
 |---|---|---|
-| **Fleet Manager** | `manager@transitops.com` | Full System Access |
-| **Driver** | `driver@transitops.com` | Trips & Dispatching (no financial data) |
-| **Safety Officer** | `safety@transitops.com` | Driver Management & Compliance |
-| **Financial Analyst**| `analyst@transitops.com` | Costs, Fuel, and ROI Reports |
+| ![Sign-in page with one-click demo roles](docs/screenshots/sign-in.webp) | ![Trip ledger](docs/screenshots/trips.webp) | ![Reports and analytics](docs/screenshots/reports.webp) |
 
-The seed data intentionally includes edge cases for testing the guardrails: a driver with an **expired license**, a **suspended** driver, and **retired / in-shop** vehicles — try dispatching them and watch the system refuse.
+## Run it
 
----
+You need Node.js 20 or newer. Nothing else: no database to install, no `.env` to write.
 
-## 📏 Business Rules — enforced, not suggested
+```bash
+cd frontend && npm ci && npm run build
+cd ../backend && npm ci && npm start
+```
 
-| Rule | Where it's enforced |
+Open http://localhost:5000 and pick a role.
+
+With no database configured, TransitOps starts its own PostgreSQL from the binaries in the [`embedded-postgres`](https://www.npmjs.com/package/embedded-postgres) package. It is the real engine, with the same enums, constraints and transactions, running in a temporary folder. It is rebuilt from the seed data on every start.
+
+To use your own PostgreSQL instead, copy `backend/.env.example` to `backend/.env` and set `DATABASE_URL`. Migrations and the seed run at start either way.
+
+### Develop
+
+```bash
+cd backend && npm run dev      # API on :5000, restarts on change
+cd frontend && npm run dev     # UI on :5173, proxies /api to :5000
+```
+
+### Test
+
+```bash
+cd backend && npm test
+```
+
+This starts the app on the built-in database, runs **37 end-to-end checks** against the real HTTP API and shuts everything down. It covers every business rule, every validation and the whole role matrix. The same command runs in CI on every push.
+
+To run the checks against a server that is already up: `npm run test:e2e` (set `API_URL` to point somewhere other than `http://localhost:5000/api`).
+
+## Rules that are enforced, not suggested
+
+| Rule | Where it is enforced |
 |---|---|
-| Unique registration numbers | PostgreSQL `UNIQUE` constraint → clean 409 |
-| Retired / In-Shop vehicles hidden from dispatch | API filter + re-checked inside the dispatch transaction |
-| Expired-license / suspended drivers blocked | Trip service validation, on create **and** dispatch |
-| No double-assignment of on-trip vehicle/driver | Status check inside the transaction (race-safe) |
-| Cargo weight ≤ vehicle capacity | Validation with a human-readable message |
-| Dispatch / Complete / Cancel status flips | Single atomic `prisma.$transaction` |
-| Maintenance ⇒ auto In-Shop ⇒ auto-restore on close | Maintenance service transaction |
+| Registration numbers are unique | PostgreSQL `UNIQUE` constraint, returned as a clean 409 |
+| Retired and in-shop vehicles cannot be dispatched | Filtered out of the dispatch pool, and checked again inside the dispatch transaction |
+| Drivers who are suspended, off duty or hold an expired licence cannot be assigned | Trip service, when the trip is created **and** when it is dispatched |
+| A vehicle or driver already on a trip cannot take another | Status check inside the transaction, so two requests cannot both win |
+| Cargo cannot exceed the vehicle's capacity | Validation with a message naming both numbers |
+| Dispatch, complete and cancel change trip, vehicle and driver together | One atomic `prisma.$transaction` |
+| Opening maintenance puts the vehicle in the shop; closing it brings the vehicle back | Maintenance transaction |
 
----
+## Roles
 
-## 📁 Project Structure
+Every role is enforced twice: `authorize()` middleware on the API, and a role-aware interface.
+
+| Role | Can do | Demo email |
+|---|---|---|
+| Fleet Manager | Everything: vehicles, drivers, trips, maintenance and costs | `manager@transitops.com` |
+| Driver | Create, dispatch and complete trips. No access to costs | `driver@transitops.com` |
+| Safety Officer | Manage drivers and licences, read costs. Cannot create trips | `safety@transitops.com` |
+| Financial Analyst | Record fuel and expenses, read reports. Cannot change the fleet | `analyst@transitops.com` |
+
+On the demo, the sign-in page enters any of these with one click. That switch (`DEMO_MODE`) is on only when the app runs on the built-in database. The seeded accounts also accept the password `Password@123`.
+
+The seed data includes the awkward cases on purpose: a driver with an expired licence, a suspended driver, a vehicle in the workshop and a retired one. Try dispatching them. It also includes a second fleet with six months of trips, fuel, tolls and workshop visits, so the dashboard and reports have something to show.
+
+## What it is built with
+
+- **Frontend:** React 18 with Vite. No UI kit and no chart library: the line chart, donut and bars are hand-written SVG.
+- **Backend:** Node.js and Express, one route module per resource, business rules in `services/`.
+- **Database:** PostgreSQL through Prisma. Money and weights are `DECIMAL`, statuses are native enums, uniqueness is a database constraint.
+- **Auth:** stateless JWT sessions, bcrypt password hashes.
+- **Delivery:** one Render web service. Express serves the API and the built React app from the same origin. CI on GitHub Actions.
 
 ```
 backend/
-  prisma/schema.prisma          # 8 entities, enums, constraints — the ERD in code
-  prisma/seed.js                # demo data incl. edge cases
-  src/middleware/auth.js        # JWT + authorize(...roles) RBAC
-  src/services/trip.service.js  # every business rule, inside DB transactions ★
-  src/routes/                   # one module per file
-  tests/e2e.mjs                 # 37 automated rule + RBAC tests
+  prisma/schema.prisma          8 entities, enums and constraints
+  prisma/seed.js                test fixtures plus a demo fleet with six months of history
+  src/server.js                 finds or starts a database, migrates, seeds, serves
+  src/db/embedded.js            the built-in PostgreSQL
+  src/middleware/auth.js        JWT and authorize(...roles)
+  src/services/trip.service.js  every dispatch rule, inside transactions
+  src/routes/                   one module per resource
+  tests/e2e.mjs                 37 rule and role checks
+  tests/run.js                  starts the app, runs the checks, stops it
 frontend/
-  src/components/               # layout, SVG icons, hand-written charts, pagination
-  src/pages/                    # Dashboard · Vehicles · Drivers · Trips · Maintenance · Expenses · Reports
+  src/components/               layout, icons, hand-written charts, pagination
+  src/pages/                    Dashboard, Trips, Vehicles, Drivers, Maintenance, Expenses, Reports
 ```
 
----
+## Deployment
 
-## ☁️ Deployment
+[`render.yaml`](./render.yaml) describes the whole deployment: **one free web service and no database**.
 
-Deployed on Render via a one-click [Blueprint](./render.yaml): one web service (Express serves both the API and the React build — same origin, no CORS) plus managed PostgreSQL. Migrations and the idempotent seed run on every boot. Full guide: [docs/DEPLOY.md](./docs/DEPLOY.md).
+An earlier version used Render's free PostgreSQL, which is deleted after 30 days and took the demo down with it. The service now carries its own database, so there is nothing left to expire. The trade-off is deliberate: data lives in the service's temporary disk and is rebuilt from the seed at every start, which is what a public demo wants anyway.
 
----
+In Render: **New > Blueprint**, select this repository, **Apply**. Every push to `main` redeploys.
 
-## 📚 System Design & Architecture
+## Design notes
 
-For a deep dive into the underlying architecture, database Entity-Relationship Diagram (ERD), API specifications, state machines, and the full RBAC matrix, please refer to the [System Design Document](./SYSTEM_DESIGN.md).
+The architecture, the entity-relationship diagram, the API, the state machines and the full role matrix are in the [system design document](./SYSTEM_DESIGN.md).
 
-> Built with ❤️ for the Odoo Hackathon.
+The interface is styled after road signage: asphalt chrome, signal-yellow actions, condensed lettering, and registration numbers set as number plates. Light and dark themes share one stylesheet.
+
+![Dashboard in the dark theme](docs/screenshots/dashboard-dark.webp)
