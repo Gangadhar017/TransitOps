@@ -1,0 +1,24 @@
+# Render Blueprint: one free web service and nothing else.
+#
+# There is no database to provision. TransitOps starts its own PostgreSQL inside
+# the service (backend/src/db/embedded.js), so there is no free-tier database to
+# expire. Demo data is rebuilt from the seed every time the service starts.
+#
+# In Render: New > Blueprint > select this repository > Apply.
+services:
+  - type: web
+    name: transitops
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm ci && cd ../frontend && npm ci --include=dev && npm run build
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TRANSITOPS_DB
+        value: embedded
+      - key: DEMO_MODE
+        value: "true"
