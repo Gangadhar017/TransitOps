@@ -1,6 +1,7 @@
 // End-to-end test of every mandatory business rule + the RBAC matrix, against the live API.
-// Run with the backend up:  npm run test:e2e
-const BASE = 'http://localhost:5000/api';
+//   npm test           starts the app on its built-in database, runs this, stops it
+//   npm run test:e2e   runs this against a server that is already up (API_URL to override)
+const BASE = process.env.API_URL || 'http://localhost:5000/api';
 let token = '';
 const req = async (method, path, body) => {
   const res = await fetch(BASE + path, {
